@@ -1,0 +1,30 @@
+var config = {};
+
+config.host = 'http://localhost:3030';
+config.steamApiKey = '';
+config.FACEIT_CHAMPID = '';
+
+config.postgres = {};
+config.postgres.host = '127.0.0.1';
+config.postgres.user = 'user';
+config.postgres.password = 'pass';
+config.postgres.database = 'db';
+config.postgres.port = 5432;
+
+config.broxus = {};
+config.broxus.domain = '';
+config.broxus.apikey = '';
+config.broxus.secret = '';
+config.broxus.workspaceId = '';
+config.broxus.currency = '';
+config.broxus.addressType = '';
+config.broxus.applicationId = '';
+
+config.broxus.masterWallet = {}
+config.broxus.masterWallet.currency = '';
+config.broxus.masterWallet.addressType = '';
+config.broxus.masterWallet.userAddress = '';
+config.broxus.masterWallet.blockchainAddress = '';
+config.broxus.masterWallet.staticAddress = '';
+
+module.exports = config;

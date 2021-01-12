@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Free TON League Championships</title>
+  <link rel="stylesheet" href="/static/css/core.css">
+</head>
+<body>
+<div id="my-surf-wallet" class="my-surf-wallet">
+    <div id="wront-surf">ID is incorrect</div>
+    <div class="my-surf-wallet-title">FREETON<span>LEAGUE</span></div>
+    <div class="my-surf-wallet-subtitle">
+        Enter your Surf Wallet ID below for link it with your SteamID for the payment of prize money 
+    </div>
+    <input type="text" id="wallet-id" class="my-surf-wallet-container-input" onfocus="surf.checkWalletId();" onchange="surf.checkWalletId();" placeholder="{{ user.surf_wallet_id }}" value="{{ user.surf_wallet_id }}" pattern="^0:[a-zA-Z0-9]+$">
+    
+    <div id="send-wallet-id" onclick="surf.sendWalletId('edit');" class="my-surf-wallet-container">
+        <div class="my-surf-wallet-container-text">
+            Update Surf Wallet ID 
+        </div>
+    </div>
+    <div class="my-surf-wallet-back" onclick="surf.getBack();">« cancel</div>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="/static/js/core.js"></script>
+    <script>
+        var surf = new Surf();
+    </script>
+</div>
+</body>
+</html>

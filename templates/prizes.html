@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Free TON League</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+  <link rel="stylesheet" href="/static/css/prizes.css">
+</head>
+<body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="/static/js/prizes.js"></script>
+<div id="header" class="header">
+	<div class="header-wrapper">
+
+		<div id="balance-refresh" class="header-balance" onclick="cards.balanceRefresh();">
+      Balance: <span class="wallet-balance">{{ user.wallet.balance.available }}</span> TON
+
+    </div>
+		<div class="name" onclick="cards.openModal('user-modal');">{{ user.personaname }}</div>
+	</div>
+  <div class="clearfix"></div>
+  <div class="withdraw-button" onclick="cards.openModal('withdraw-modal');">Withdraw</div>
+</div>
+
+<div id="prizes" class="container">	
+	<div class="loader-wrap blue-spinner" title="loading">
+    <div class="spinner spinner-bounce-middle"></div>
+  </div>
+</div>
+
+<div id="user-modal" class="user-modal">
+  <div class="modal-close" onclick="cards.closeModal('user-modal');"><span class="close-button"></span></div>
+  <div class="modal-wrap">
+    <div class="username">
+      <span class="sup">steam profile</span>
+      {{user.personaname}}
+    </div>
+    <div class="modal-logout"><span onclick="cards.logout();">Logout</span></div>
+  </div>
+</div>
+
+<div id="withdraw-modal" class="modal-window">
+  <div class="backside" onclick="cards.closeModal('withdraw-modal')"></div>
+  <div class="wrap" id="withdraw-modal-wrap">
+
+      <a onclick="cards.closeModal('withdraw-modal')" title="Close" class="modal-close">Close</a>
+      <div class="title" >Your balance <span id="wallet-balance" class="wallet-balance-o">{{ user.wallet.balance.available }}</span> TON</div>
+      
+      {% if user.wallet.balance.available > 0 %}
+      <div class="withdraw-inputs">
+        <div class="sub-title">to TON wallet id</div>
+        <input id="withdraw-wallet-id" class="wallet-id" placeholder="0:12345..." value="">
+
+        <div class="sub-title">Amount</div>
+        <input id="withdraw-value" class="value" placeholder=".." value="">
+      </div>
+      <div class="request" onclick="cards.withdrawTon()">
+        Withdraw
+      </div>
+      {% endif %}
+  </div>
+</div>
+
+<div id="success-modal" class="modal-window">
+  <div class="backside" onclick="cards.closeModal('success-modal')"></div>
+  <div class="wrap" id="withdraw-modal-wrap">
+
+      <a onclick="cards.closeModal('success-modal')" title="Close" class="modal-close">Close</a>
+      <div class="title success">Success</div>
+  </div>
+</div>
+
+<script>
+    var cards = new Cards();
+    setTimeout(function(){cards.getPrizes()},300);
+</script>  
+
+</body>
+</html>

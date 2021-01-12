@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Free TON - Tournaments section</title>
+  <link rel="stylesheet" href="/static/css/milligram.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+
+</head>
+<body>
+
+<header class="header">
+  <nav class="bar default">
+    <div class="container">      
+      <span class="title">&nbsp;Free TON League Admin Panel</span>
+
+      <div class="dropdown right">
+          <input type="checkbox" id="ct1">
+          <label for="ct1">{{user.personaname}}</label>
+          <ul>
+              <li><a href="#typography">1</a></li>
+              <li><a href="#blockquotes">2</a></li>
+              <li><a href="#">2</a></li>
+          </ul>
+      </div>
+
+    </div>
+  </nav>
+</header>
+
+<section class="add-tournament-section container mvxl text-center">
+    <h5 class="text-center">
+        Tournaments section
+    </h5>
+    <a id="add-tournament-button" class="button large" onclick="trnm.showAddTournamentContainer();" href="javascript: void(0)">Add Tournament</a>
+
+    <div id="add-tournament-status" class="well add-tournament-status"></div>
+
+    <div id="add-tournament-container" class="add-tournament-container">
+        <div class="row-platform">
+            <label for="new-tournament-link">Platform</label>
+            <div><input type="radio" name="new-tournament-platform" value="faceit" checked=""> Faceit</div>
+            <div><input type="radio" name="new-tournament-platform" value="epulze"> Epulze</div>
+            
+            <label for="new-tournament-link">URL tournament</label>
+            <input autocomplete="off" type="text" id="new-tournament-link" placeholder=".." >
+            
+            <a class="button green" href="javascript: void(0)" onclick="trnm.addNewTournament();">Add</a>
+            <input class="button button-clear secondary" type="submit" onclick="trnm.hideAddTournamentContainer();" value="Cancel">
+        </div>
+    </div>
+</section>
+
+<script>
+  
+var Tournaments = function() {
+
+    this.domain = '';
+
+    this.loadings = [];
+
+    let self = this;
+
+    this.addLoader = (_target) => {
+        let loading_div_local = `<div class="loader-wrap" title="loading">
+                                  <div class="loader-overlay"></div>
+                                  <div class="spinner spinner-bounce-middle"></div>
+                                </div>`;
+
+        let loading_div_global = `<div class="loader-global" title="loading">
+                                  <div class="loader-overlay"></div>
+                                  <div class="spinner spinner-bounce-middle"></div>
+                                </div>`;
+
+        switch(_target){
+            case 'global':
+                if($('body').find('.loader-global').length) return;
+                $('body').append(loading_div_global);
+                break;
+            default:
+                if($(_target).find('.loader-wrap').length) return;
+                $(_target).append(loading_div_local);
+        }
+    }
+    this.removeLoader = (_target) => {
+        
+        switch(_target){
+            case 'global':
+                $('body').find('.loader-global').remove();
+                break;
+            default:
+                $(_target).find('.loader-wrap').remove();
+        }
+    }
+
+    this.showAddTournamentContainer = () => {
+        $('#add-tournament-button').hide();
+        $('#add-tournament-container').fadeIn('fast');
+
+        $('#add-tournament-status').hide();
+    }
+    this.hideAddTournamentContainer = () => {
+        $('#add-tournament-container').fadeOut('fast',()=>{
+            $('#add-tournament-button').fadeIn('fast');    
+        });
+    }
+
+    this.showAddTournamentStatus = (status) => {
+        setTimeout(function(){
+            $('#add-tournament-status').html(status).fadeIn('fast');
+        },200)
+    }
+
+    this.addNewTournament = () => {
+        var _platform = $('[name=new-tournament-platform]:checked').val();
+        console.log(_platform)
+        var _link = $.trim($('#new-tournament-link').val());
+
+        let regex = new RegExp(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
+    
+        if(_link.match(regex) && _platform.length){
+            this.addLoader('#add-tournament-container');
+            axios({
+                    url: `${this.domain}/admin/tournaments/add`,
+                    method: 'post',
+                    data: {'platform': _platform, 'link': _link}
+                })
+                .then(function(resp){
+                    if(resp.data.code == 200){
+                        self.loadTournaments();
+                        self.showAddTournamentStatus('Tournament successfully added');
+                    }else{
+                        let _err = `Error: ${resp.data.message}`;
+                        console.log(_err);
+                        alert(_err);
+                        self.showAddTournamentStatus(_err);
+                    }
+                })
+                .catch(function(error){
+                    let _err = `Error: ${error}`;
+                    console.log(_err);
+                    alert(_err);
+                    self.showAddTournamentStatus(_err);
+                })
+                .then(function(){
+                    self.hideAddTournamentContainer();
+                    setTimeout(function(){
+                        self.removeLoader('#add-tournament-container');
+                    }, 300);
+                })
+        }
+    }
+
+    this.loadTournaments = () => {
+        this.addLoader('#tournaments-list');
+        axios.get(`${this.domain}/admin/tournaments/get?q=all`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    console.log(resp.data);
+                    self.renderTournaments(resp.data.tournaments);
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    self.removeLoader('#tournaments-list');
+                }, 300);
+            })
+    }
+
+    this.renderTournaments = (tournaments) => {
+        var _html = '';
+        for(let _t of tournaments){
+
+            switch(_t.game){
+                case 'csgo':
+                    var game_icon = `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 28 28" class="icon--24 icon-disciplines">
+                                        <g class="icon-game--cs-go" fill="none" fill-rule="nonzero">
+                                            <rect class="icon-game__fill--E9A21A" width="28" height="28" rx="4"></rect>
+                                            <path class="icon-game__fill--313E77" d="M4 0h10v17l3.758 11H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4z"></path>
+                                            <path class="icon-game__fill--FF-and-FF" d="M27 4.201h-2.747v-.33h-.217v-.88h-.324v.99h-.325v-.22H17.44v-.22h-.65l-1.319.33-.108-.66.779-.44V1.65l-.109-.22-.108-.22V.88C15.621.44 14.54 0 13.956 0c-.606 0-1.147.066-1.752.99-.606.924-.217 2.001-.217 2.001v.55c-.281-.242-.887-.33-.887-.33-1.6 0-2.314 2.486-2.314 3.322 0 .835.108 1.451.108 1.451h-.887c-.281 0-.325.594-.325 1.21-.021.616-.194 1.584-.108 1.782.065.176.779.22.779.22s-.195.088-.433.44c-.26.373 0 1.341 0 1.341v1.562l-.151.088-.216.22v.33l.108.22-.108.33v.44l.216.33s-.087.571-.216 1.21c-.13.66-.109 2.33-.109 2.33-.302.023-.324.44-.324.44s-.065.089-.433.66c-.39.572-.497 1.144-.54 1.562-.065.418-.347.726-.65 1.21-.324.484.217 1.1.217 1.1-.563 1.385-.692 2.375-.714 2.969h2.098a3.838 3.838 0 0 1-.173-1.1c0-.616.541-1.671.541-1.671l.433-.11.108-.44c.086-.374.476-1.166.779-1.782.28-.616 0-.99 0-.99l.216-.55.324-.33.433-.55.325-.44.108-.55s.238-.725.324-1.209c.087-.506.779-1.21.779-1.21l.108-.55.541.88.649.11 1.428 2.332h.778l.217.22v.99l-.325.44.217 1.671.108 1.21.216.22.216 1.671-.324.22-.108 1.54h4.283v-.088l-.108-.33-.433-.22-.54-.22-1.104-1.21.108-1.561.217-.44v-.77l-.217-.44.217-1.1.108-2.111-.217-.11v-.66h-.216s-.433-1.254-.649-1.892c-.238-.637-1.038-1.781-1.428-2.111-.389-.33-.41-.902-.432-1.1-.022-.22.216-.44.216-.44s.108.066.325.11c.216.044.216-.11.216-.11l.216-.44.216-.33.109-.99V9.987c-.065-.55-.541-.77-.541-.77l.108-.44.433.22.54.22.65.33.778.22.541-.11.54-.33.542-.77.216-.99.324-.11.109-.22-.109-.44v-.99l.433-.33.108-.22.325-.22h2.53v-.329h3.527v-.506H27zm-9.02 2.552l-.325-.66.887.11-.563.55zm.778-.88h-.649l.216-.44h.433v.44z"></path>
+                                        </g>
+                                    </svg>`;
+                    break;
+                case 'dota2':
+                    var game_icon = `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 28 28" class="icon--24 icon-disciplines">
+                                        <g class="icon-game--dota2" fill="none" fill-rule="nonzero">
+                                            <rect class="icon-game__fill--A51C0F" width="28" height="28" rx="4"></rect>
+                                            <path class="icon-game__fill--FF-and-FF" d="M20.21 4l1.685 1.669-.72 3.887-4.543-4.173L20.21 4zM6.345 24L4 21.126l1.644-4.904 4.672 5.77L6.346 24zm16.135-1.378l-3.3.267L4 5.136 5.26 4h1.02L24 17.52l-1.52 5.102z"></path>
+                                        </g>
+                                    </svg>`;
+                    break;
+            }
+
+            let prize_pool = (!_t.prize_pool)?'Not set':_t.prize_pool;
+
+            let platform = {'faceit': 'FACEIT', 'epulze': 'Epulze'};
+
+            _html += `<div class="alert tournament" data-tournament-id="${_t.tournament_id}" onclick="trnm.loadTournament('${_t.tournament_id}')">
+                        <div class="tournaments-block">
+                            <div class="block-left">
+                                <span class="icon">${game_icon}</span>
+                            </div>
+                            <div class="block-right">
+                                <div class="title">${_t.title}</div>
+                                <div>
+                                    <div>Platform <span>${platform[_t.platform]}</span></div>
+                                    <div>Prize pool <span>💎 ${prize_pool}</span></div>
+                                    <div>Date <span>${_t.start_time}</span></div>
+                                    <div>Status <span>${_t.status}</span></div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>`;
+        }
+
+        // document.getElementById("tournaments-list").innerHTML = _html;
+        $('#tournaments-list').html(_html);
+        $('#tournaments-list .alert.tournament').fadeIn('fast');
+    }
+
+
+    this.loadTournament = (tournament_id) => {
+        //if(tournament_id == $('#tournaments-list .alert.tournament').data("tournament-id")) return;
+
+        // clear content
+        document.getElementById("tournament-content").innerHTML = '';
+
+        $('#tournaments-list .alert.tournament').removeClass('selected');
+        $(`#tournaments-list .alert.tournament[data-tournament-id="${tournament_id}"]`).addClass('selected');
+
+        this.addLoader('#tournament-content');
+        axios.get(`${this.domain}/admin/tournaments/get/${tournament_id}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    self.renderTournamentContent(resp.data.tournament);
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    self.removeLoader('#tournament-content');
+                }, 300);
+            })
+    }
+
+    this.renderTournamentContent = (tournament) => {
+        console.log(tournament);
+
+        let tab_overview = `<div id="tab-content-overview" class="tab-content selected">
+            <div class="row">
+                <div class="column overview-block">
+                    
+                    <div class="row">
+                        <div class="column column-50">
+                            <label>Tournament display for players</label>
+                            <input autocomplete="off" type="checkbox" id="approved-status">
+                            <label class="label-inline" for="approved-status">Approved status</label>
+                        </div>
+                        <div class="column column-10"></div>
+                        <div class="column column-40 text-right">
+                            <label class="update-status">&nbsp;</label>
+                            <a class="update-approved-status button" href="javascript: void(0)" onclick="trnm.updateApprovedStatus('${tournament.tournament_id}');">Update approved status</a>
+                        </div>
+                    </div>
+
+                    <div class="row" id="overview-payouts-row">
+                        <div class="column column-50">
+                            <label>Payouts</label>
+                            <label class="label-inline" for="approved-status">
+                                <p>You can automacitally create <b>Wallets</b> and <b>Transfers</b> for all players on tournament. It can takes up to 3 minutes</p>
+                                <p>If player already has <b>Wallet</b> or/and <b>Transfer</b> - he will be ignored</p>
+                                <p>You can also create wallets and transfers manually for each player separately</p>
+                            </label>
+                        </div>
+                        <div class="column column-10"></div>
+                        <div class="column column-40 text-right">
+                            <label class="update-status">&nbsp;</label>
+                            <a class="update-approved-status button green" href="javascript: void(0)" onclick="trnm.tournamentCreateWalletsForTournament('${tournament.tournament_id}');">Create Wallets for all players</a>
+                            <a class="update-approved-status button green" href="javascript: void(0)" onclick="trnm.tournamentCreateTransfersForTournament('${tournament.tournament_id}');">Create Transfers for all players</a>
+                        </div>
+                    </div>
+
+                </div>     
+            </div>
+        </div>`;
+
+        let tab_prize_pool_calculator = `<div id="tab-content-prize_pool-calculator" class="tab-content">
+                                <div class="row">
+                                    <div class="column column-50">
+                                        <label for="new-tournament-link">Format: ${tournament['game_type']}</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="column column-50">
+                                        <label for="prize_pool">Total Prize pool</label>
+                                        <input autocomplete="off" type="text" placeholder=".." id="prize_pool" onkeyup='trnm.validatePrize(event)' maxlength="4">
+                                        <div>
+                                            Prize pool left: <span id="prize_pool-left" class="prize_pool-left">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="column column-10"></div>
+                                    <div class="column column-40 text-right">
+                                        <label class="update-status">&nbsp;</label>
+                                        <a class="update-prize_pool button" href="javascript: void(0)" onclick="trnm.updatePrize_pool('${tournament.tournament_id}');">Update Prize pool</a>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="column prize-block">
+                                        <label for="1st-prize">1st <small>1 team <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="1st-prize" data-place="1st" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", "${tournament['game_type']}", 1)' maxlength="3" data-teams-count=1>
+                                        <div class="helper"></div>
+                                    </div>
+                                    <div class="column prize-block">
+                                        <label for="2nd-prize">2nd <small>1 team <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="2nd-prize" data-place="2nd" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", 1)' maxlength="3" data-teams-count=1>
+                                        <div class="helper"></div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="column prize-block">
+                                        <label for="3-4th-prize">3-4th <small>2 teams <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="3-4th-prize" data-place="3-4th" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", 2)' maxlength="3" data-teams-count=2>
+                                        <div class="helper"></div>
+                                    </div>
+                                    <div class="column prize-block">
+                                        <label for="5-8th--prize">5-8th <small>4 teams <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="5-8th-prize" data-place="5-8th" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", 4)' maxlength="3" data-teams-count=4>
+                                        <div class="helper"></div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="column prize-block">
+                                        <label for="9-16th-prize">9-16th <small>8 teams <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="9-16th-prize" data-place="9-16th" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", 8)' maxlength="3" data-teams-count=8>
+                                        <div class="helper"></div>
+                                    </div>
+                                
+                                    <div class="column prize-block">
+                                        <label for="17-32th-prize">17-32th <small>16 teams <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="17-32th-prize" data-place="17-32th" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", 16)' maxlength="3" data-teams-count=16>
+                                        <div class="helper"></div>
+                                    </div>   
+                                </div>
+
+                                <div class="row">                 
+                                    <div class="column prize-block">
+                                        <label for="33-64th-prize">33-64th <small>32 teams <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="33-64th-prize" data-place="33-64th" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", 32)' maxlength="3" data-teams-count=32>
+                                        <div class="helper"></div>
+                                    </div>
+                                    <div class="column prize-block">
+                                        <label for="65-128th-prize">65-128th <small>64 teams <span></span></small></label>
+                                        <input autocomplete="off" type="text" placeholder=".." class="place-prize" id="65-128th-prize" data-place="65-128th" onkeyup='trnm.validatePrize(event, "${tournament['game_type']}", 64)' maxlength="3" data-teams-count=64>
+                                        <div class="helper"></div>
+                                    </div>
+                                </div>
+        </div>`;
+
+        let tab_teams = `<div id="tab-content-teams" class="tab-content">Teams</div>`;
+
+        let tab_players = `<div id="tab-content-players" class="tab-content">Players</div>`;
+
+        let tab_rounds = `<div id="tab-content-rounds" class="tab-content">Rounds</div>`;
+
+    /* PAYOUT TAB */
+        // prepare payout tab
+        let playersArr = Object.values(tournament.players);
+        
+        playersArr.sort((a,b) => (a.team.name > b.team.name) ? 1 : ((b.team.name > a.team.name) ? -1 : 0));
+        
+        var _paymentsPlayersTable = '';
+
+        for(_p of playersArr){
+            var _delimeter = (tournament['game_type']=='5v5')?5:1;
+            let _prize = tournament['prize_pool_distribution'][_p['place']] / _delimeter;
+
+            _paymentsPlayersTable += `<tr class="payout-row" data-user_id="${_p['game_id']}">
+                              <td class="payout-game_name" data-game_name="${_p['game_name'].htmlEncode()}">${_p['game_name'].htmlEncode()}</td>
+                              <td class="payout-team" data-team="${_p['team']['name'].htmlEncode()}">${_p['team']['name'].htmlEncode()}</td>
+                              <td class="payout-place" data-place="${_p['place']}">${_p['place']}</td>
+                              <td class="payout-prize" data-prize="${_prize}">${_prize} TON</td>
+                              <td class="payout-wallet" data-wallet="0">..</td>
+                              <td class="payout-transfer" data-transfer="0">..</td>
+                            </tr>`;
+        }
+
+        let _payoutsHtml = `<table>
+                          <thead>
+                            <tr>
+                                <th>Steam Name</th><th>Team</th><th>Place</th><th>Prize</th><th>Wallet</th><th>Transfer</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${_paymentsPlayersTable}
+                        </tbody>
+                    </table>`;
+
+        let tab_payouts = `<div id="tab-content-payouts" class="tab-content">${_payoutsHtml}</div>`;
+    /* PAYOUT TAB */
+
+
+        let _html = `<div class="tournament-content-wrapper" data-tournament-id="${tournament.tournament_id}" data-service="${tournament.service}">
+                        <h4 class="title">${tournament.title}</h4>
+
+                        <div class="tabs gray-spinner">
+                            <a href="javascript: void(0)" class="tab button secondary" onclick="trnm.tournamentSelectTab('overview');" data-tab="overview">Overview</a>
+                            <a href="javascript: void(0)" class="tab button default" onclick="trnm.tournamentSelectTab('prize_pool-calculator');" data-tab="prize_pool-calculator">Prize pool</a>
+                            <a href="javascript: void(0)" class="tab button default" onclick="trnm.tournamentSelectTab('teams');" data-tab="teams">Teams</a>
+                            <a href="javascript: void(0)" class="tab button default" onclick="trnm.tournamentSelectTab('players');" data-tab="players">Players</a>
+                            <a href="javascript: void(0)" class="tab button default" onclick="trnm.tournamentSelectTab('rounds');" data-tab="rounds">Rounds</a>
+                            <a href="javascript: void(0)" class="tab button default fix-size-for-6" onclick="trnm.tournamentSelectTab('payouts');" data-tab="payouts">Payouts</a>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="tabs-content-wrapper">
+                            ${tab_overview}
+                            ${tab_prize_pool_calculator}
+                            ${tab_teams}
+                            ${tab_players}
+                            ${tab_rounds}
+                            ${tab_payouts}
+                        </div>
+                    </div>`;
+
+
+        //document.getElementById("tournament-content").innerHTML = _html;
+        $('#tournament-content').html(_html);
+
+        // fill prize pool distributions
+        if(tournament.prize_pool_distribution){
+            for(let _place in tournament.prize_pool_distribution) {
+                let _val = tournament.prize_pool_distribution[_place];
+                $(`.place-prize[data-place="${_place}"]`).val(_val);
+            }
+        }
+        if(tournament.prize_pool_distribution){
+            $('#prize_pool').val(tournament.prize_pool);
+        }
+        $('#tournament-content .tournament-content-wrapper').fadeIn('fast');
+
+        // load wallets and transfers
+        this.tournamentLoadUsersWallets(tournament.tournament_id);
+        this.tournamentLoadUsersTransfers(tournament.tournament_id);
+    }
+
+    this.tournamentPayoutsLockTab = () => {
+        $('.tournament-content-wrapper .tabs .tab[data-tab="payouts"]').html('<div class="spinner spinner-bounce-middle tab-lock"></div>');
+    }
+    this.tournamentPayoutsUnLockTab = () => {
+        $('.tournament-content-wrapper .tabs .tab[data-tab="payouts"]').html('Payouts');
+    }
+
+    this.tournamentCreateWalletsForTournament = (tournament_id) => {
+        // create wallets for all players
+
+        if(
+            this.loadings.includes('tournamentCreateWalletsForTournament') ||
+            this.loadings.includes('tournamentCreateTransfersForTournament')
+        ){
+            return;
+        }
+        this.addLoader('#overview-payouts-row');
+        this.loadings.push('tournamentCreateWalletsForTournament');
+        this.tournamentPayoutsLockTab();
+
+        axios.get(`${this.domain}/admin/tournaments/wallets/create/for/tournament/${tournament_id}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    console.log(resp.data);
+                    console.log('complete');
+                    self.tournamentLoadUsersWallets(tournament_id);
+        
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    self.removeLoader('#overview-payouts-row');
+                    self.loadings.splice(self.loadings.indexOf('tournamentCreateWalletsForTournament'), 1);
+                    self.tournamentPayoutsUnLockTab();
+                }, 300);
+            })
+
+    }
+
+    this.tournamentCreateTransfersForTournament = (tournament_id) => {
+        // create transfers for all players
+
+        if(
+            this.loadings.includes('tournamentCreateWalletsForTournament') ||
+            this.loadings.includes('tournamentCreateTransfersForTournament')
+        ){
+            return;
+        }
+        this.addLoader('#overview-payouts-row');
+        this.loadings.push('tournamentCreateTransfersForTournament');
+        this.tournamentPayoutsLockTab();
+
+        axios.get(`${this.domain}/admin/tournaments/wallets/transfer/prepare/for/tournament/${tournament_id}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    console.log(resp.data);
+                    console.log('complete');
+                    self.tournamentLoadUsersTransfers(tournament_id);
+        
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    self.removeLoader('#overview-payouts-row');
+                    self.loadings.splice(self.loadings.indexOf('tournamentCreateTransfersForTournament'), 1);
+                    self.tournamentPayoutsUnLockTab();
+                }, 300);
+            })
+    }
+
+    this.tournamentLoadUsersWallets = (tournament_id) => {
+
+        //this.addLoader('#tournament-content');
+        axios.get(`${this.domain}/admin/tournaments/wallets/get/for/tournament/${tournament_id}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    self.tournamentPlaceUsersWallets(resp.data.wallets);
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    //self.removeLoader('#tournament-content');
+                }, 300);
+            })
+    }
+
+    this.tournamentPlaceUsersWallets = (wallets) => {
+        // place exista wallets
+        for (let _w in wallets){
+            $(`.payout-row[data-user_id='${_w}'] .payout-wallet`).attr('data-wallet','1').html('yes');
+        }
+        // place buttons for create
+        $(`.payout-row .payout-wallet[data-wallet='0'`).each(function(){
+            let user_id = $(this).parent('.payout-row').data('user_id');
+            $(this).addClass('green-spinner').html(`<button class="button-outline green small no-mg" onclick="trnm.tournamentCreateWalletForUser('${user_id}')">create W</button>`);
+        })
+
+    }
+
+    this.tournamentCreateWalletForUser = (user_id) => {
+        // create wallet for specific user
+        var _this = $(`.payout-row[data-user_id='${user_id}'] .payout-wallet`);
+
+        let _tournament_id = _this.parents('.tournament-content-wrapper').data('tournament-id');
+        let _service = _this.parents('.tournament-content-wrapper').data('service');
+
+        //set loader
+        _this.html(`<div class="spinner spinner-bounce-middle"></div>`);
+
+        axios.get(`${this.domain}/admin/tournaments/wallets/create/for/user/${user_id}?tournament_id=${_tournament_id}&service=${_service}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    _this.html('yes');
+                    // add transfer button
+                    let user_payout_transfer = $(`.payout-row[data-user_id='${user_id}'] .payout-transfer`);
+                    // check for status
+                    console.log('data-transfer', user_payout_transfer.data('transfer'))
+                    console.log('data-transfer-id', user_payout_transfer.data('transfer_id'))
+                    switch(user_payout_transfer.data('transfer')){
+                        case 0:
+                            var _status = `<button class="button-outline blue small no-mg" onclick="trnm.tournamentCreateTransferForUser('${user_id}')">create T</button>`;
+                            var data_transfer = 0;
+                            break
+                        case 1:
+                            var _status = `<a class="button red small no-mg" onclick="trnm.tournamentSignTransfer('${user_payout_transfer.data('transfer_id')}')" href="javascript: void(0)">Transfer</a>`;
+                            var data_transfer = 1;
+                            break;
+                        case 2:
+                            var _status = '<code>Payed</code>';
+                            var data_transfer = 2;
+                            break;
+                    }
+                    user_payout_transfer.addClass('blue-spinner').attr('data-transfer',`${data_transfer}`).html(_status);
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    //self.removeLoader('#tournament-content');
+                }, 300);
+            })
+    }
+
+    this.tournamentCreateTransferForUser = (user_id) => {
+        // create wallet for specific user
+        var _this = $(`.payout-row[data-user_id='${user_id}'] .payout-transfer`);
+
+        let _tournament_id = _this.parents('.tournament-content-wrapper').data('tournament-id');
+        let _service = _this.parents('.tournament-content-wrapper').data('service');
+
+        //set loader
+        _this.html(`<div class="spinner spinner-bounce-middle"></div>`);
+        axios.get(`${this.domain}/admin/tournaments/wallets/transfer/prepare/for/user/${user_id}?tournament_id=${_tournament_id}&service=${_service}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    console.log(resp.data);
+
+                    switch(resp.data.transfer['status']){
+                        case 'wait_for_sign':
+                            var _status = `<a class="button red small no-mg" onclick="trnm.tournamentSignTransfer('${resp.data.transfer['transfer_id']}')" href="javascript: void(0)">Transfer</a>`;
+                            break;
+                        case 'signed':
+                            var _status = '<code>Payed</code>';
+                            break;
+                    }
+                    _this.attr('data-transfer_id', resp.data.transfer['transfer_id']);
+                    _this.html(_status);
+                }else{
+                    console.log(resp.data);
+                    alert(resp.data);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    //self.removeLoader('#tournament-content');
+                }, 300);
+            })
+    }
+
+    this.tournamentLoadUsersTransfers = (tournament_id) => {
+
+        //this.addLoader('#tournament-content');
+        axios.get(`${this.domain}/admin/tournaments/wallets/transfer/get/for/tournament/${tournament_id}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    self.tournamentPlaceUsersTransfers(resp.data.transfers);
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    //self.removeLoader('#tournament-content');
+                }, 300);
+            })
+    }
+
+    this.tournamentPlaceUsersTransfers = (transfers) => {
+        console.log(transfers)
+        // place exista transfers
+        // for (let _t in transfers){
+        //     switch(transfers[_t]['status']){
+        //         case 'wait_for_send':
+        //             var _status = '<a class="button red small no-mg" href="javascript: void(0)">Transfer</a>';
+        //             var data_transfer = 1;
+        //             break;
+        //         case 'done':
+        //             var _status = '<code>Payed</code>';
+        //             var data_transfer = 2;
+        //             break;
+        //     }
+        // }
+        // place buttons for create
+        $(`.payout-row .payout-transfer`).each(function(){
+            let user_id = $(this).parent('.payout-row').data('user_id');
+
+            
+            //check for transfer 
+            if(transfers.hasOwnProperty(user_id)){
+                switch(transfers[user_id]['status']){
+                    case 'wait_for_sign':
+                        var _status = `<a class="button red small no-mg" onclick="trnm.tournamentSignTransfer('${transfers[user_id]['transfer_id']}')" href="javascript: void(0)">Transfer</a>`;
+                        var data_transfer = 1;
+                        var data_transfer_id = transfers[user_id]['transfer_id'];
+                        break;
+                    case 'signed':
+                        var _status = '<code>Payed</code>';
+                        var data_transfer = 2;
+                        var data_transfer_id = null;
+                        break;
+                }
+            }else{
+            //if transfer not exists
+                var _status = `<button class="button-outline blue small no-mg" onclick="trnm.tournamentCreateTransferForUser('${user_id}')">create T</button>`;
+                var data_transfer = 0;
+                var data_transfer_id = null;
+            }
+
+            // check for wallet and replace button
+            if( $(this).parent('.payout-row').find('.payout-wallet[data-wallet="0"]').length ){
+                _status = 'no wallet';
+            }
+
+            // place transfer
+            $(`.payout-row[data-user_id='${user_id}'] .payout-transfer`).addClass('blue-spinner').attr('data-transfer',`${data_transfer}`).html(`${_status}`);
+
+            // add transfer id if exists
+            if(data_transfer_id){
+                $(`.payout-row[data-user_id='${user_id}'] .payout-transfer`).addClass('blue-spinner').attr('data-transfer_id',`${data_transfer_id}`)
+            }
+        
+
+        })   
+    }
+
+    this.tournamentSignTransfer = (transfer_id) => {
+
+        this.addLoader('global');
+
+        axios.get(`${this.domain}/admin/tournaments/wallets/transfer/sign/${transfer_id}`)
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    console.log(resp.data);
+                    console.log('complete');
+                    
+                    $(`.payout-row .payout-transfer[data-transfer_id='${transfer_id}']`).html('<code>Payed</code>');
+        
+                }else{
+                    console.log(resp.data)
+                    alert(resp.data);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+            .then(function(){
+                setTimeout(function(){
+                    self.removeLoader('global');
+                }, 300);
+            })
+    }
+
+
+
+    this.tournamentSelectTab = (target) => {
+
+        if (target == 'payouts') {
+            console.log(this.loadings)
+            if(
+                this.loadings.includes('tournamentCreateWalletsForTournament') ||
+                this.loadings.includes('tournamentCreateTransfersForTournament')
+            ){
+                return;
+            }
+        }
+
+        $('.tournament-content-wrapper .tabs .tab.button').removeClass('secondary').addClass('default');
+        $(`.tournament-content-wrapper .tabs .tab.button[data-tab="${target}"]`).removeClass('default').addClass('secondary');
+
+        $(`.tabs-content-wrapper .tab-content`).removeClass('selected');
+        $(`.tabs-content-wrapper #tab-content-${target}.tab-content`).addClass('selected');
+    }
+
+    this.updateApprovedStatus = (tournament_id) => {
+        var approved_status = ($('#tab-content-overview #approved-status:checked').val())?1:0 || 0;
+        console.log(approved_status)
+        this.addLoader('#tab-content-overview');
+        axios({
+                url: `${this.domain}/admin/tournaments/${tournament_id}/update`,
+                method: 'post',
+                data: {'q': 'approved_status', 'approved_status':approved_status}
+            })
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    console.log('success');
+                    setTimeout(function(){
+                        $('#tab-content-overview .update-status').html('success').css({'opacity':1})
+                    }, 300);
+                }else{
+                    alert(resp.data.message);
+                    setTimeout(function(){
+                        $('#tab-content-overview .update-status').html('error').css({'opacity':1})
+                    }, 300);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+                setTimeout(function(){
+                    $('#tab-content-overview .update-status').html('error').css({'opacity':1})
+                }, 300);
+            })
+            .then(function(){
+                setTimeout(function(){
+                    self.removeLoader('#tab-content-overview');
+                }, 300);
+                setTimeout(function(){
+                    $('#tab-content-overview .update-status').css({'opacity':0})
+                },2000)
+            })
+    }
+
+    this.updatePrize_pool = (tournament_id) => {
+
+        var prize_pool = $.trim($('#prize_pool').val()) || 0;
+
+        var prize_pool_distribution = {};
+        $('.place-prize').each(function(){
+            var _place = $(this).data('place');
+            var _val = $(this).val() || 0;
+            prize_pool_distribution[_place] = _val;
+        })
+
+        console.log(prize_pool_distribution)
+
+        this.addLoader('#tab-content-prize_pool-calculator');
+        axios({
+                url: `${this.domain}/admin/tournaments/${tournament_id}/update`,
+                method: 'post',
+                data: {'q': 'prize_pool', 'prize_pool':prize_pool, 'prize_pool_distribution': prize_pool_distribution}
+            })
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    console.log('success');
+                    setTimeout(function(){
+                        $('#tab-content-prize_pool-calculator .update-status').html('success').css({'opacity':1})
+                    }, 300);
+                }else{
+                    alert(resp.data.message);
+                    setTimeout(function(){
+                        $('#tab-content-prize_pool-calculator .update-status').html('error').css({'opacity':1})
+                    }, 300);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+                setTimeout(function(){
+                    $('#tab-content-prize_pool-calculator .update-status').html('error').css({'opacity':1})
+                }, 300);
+            })
+            .then(function(){
+                setTimeout(function(){
+                    self.removeLoader('#tab-content-prize_pool-calculator');
+                }, 300);
+                setTimeout(function(){
+                    $('#tab-content-prize_pool-calculator .update-status').css({'opacity':0})
+                },2000)
+            })
+    }
+
+    
+    this.logout = () => {
+        axios({
+            url: `${this.domain}/logout`,
+            method: 'post'
+          })
+            .then(function(resp){
+                if(resp.data.code == 200){
+                    window.location = resp.data.redirect;
+                }else{
+                    alert(resp.data.message);
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+                alert('Error')
+            })
+    }
+
+    this.validatePrize = (event, game_type, teams_count_prize) => {
+        var e = event || window.event;
+        let _this = $(e.target);
+
+        if (e.type === 'paste') {
+            key = event.clipboardData.getData('text/plain');
+        } else {
+            var key = e.keyCode || e.which;
+            key = String.fromCharCode(key);
+        }
+        var regex = /[0-9]|\./;
+        if( !regex.test(key) ) {
+            e.returnValue = false;
+            if(e.preventDefault) e.preventDefault();
+        }
+
+
+        var _prize_pool = $('#prize_pool').val();
+        $('.place-prize').each(function(){
+            let _team_count = $(this).data('teams-count');
+            _prize_pool -= $(this).val() * _team_count || 0;
+        })
+        $('#prize_pool-left').html(_prize_pool);
+
+        
+        let _this_val = parseInt(_this.val()) || 0;
+        _this.val(_this_val);
+        
+        var _delimeter = (game_type=='5v5')?5:1;
+
+        var _html_per_plater,
+            _html_round_total;
+        if(_this_val){
+            _html_per_plater = `${_this_val / _delimeter} ton / player`;
+            _html_round_total = ` = ${_this_val * teams_count_prize} tons`;
+        }
+        
+        _this.next('.helper').html(_html_per_plater);
+        _this.parent('.column.prize-block').find('label span').html(_html_round_total)
+
+    }
+
+    // add prototype
+    String.prototype.htmlEncode = function() {
+      return this.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g,
+          "&gt;").replace(/\"/g, "&#34;").replace(/\'/g, "&#39;");
+    };
+
+}
+
+</script>
+
+<section class="container" id="grids">
+  <h5 class="title"></h5>
+  
+  <div class="tournaments-list">
+    <div class="container">
+      <div class="row">
+        <div id="tournaments-list" class="tournaments-list-wrapper column column-30"></div>
+        
+        <div class="column column-70">
+            <div id="tournament-content" class="">
+                <div class="block-placeholdes">Select tournament</div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    var trnm = new Tournaments();
+    trnm.loadTournaments();
+</script>
+</body>
+</html>

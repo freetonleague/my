@@ -1,0 +1,379 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+strong {
+  font-weight: 600;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  line-height: 1.5;
+  color: #1c2a38;
+  background-color: #f3f5f9;
+}
+
+svg.svg-loader path,
+svg.svg-loader rect{
+  fill: #2e88cc;
+}
+.icon-game--dota2{
+    fill: #A51C0F;
+}
+.icon-game__fill--FF-and-FF {
+    fill: #fff;
+}
+.icon-game__fill--E9A21A {
+    fill: #E9A21A;
+}
+.icon-game__fill--313E77 {
+    fill: #313E77;
+}
+
+
+/* LOADING*/
+.loader-wrap{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+.loader-overlay{
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  opacity: 0.7;
+}
+.loader-spin{
+    display: inline-block;
+    vertical-align: top;
+    position: absolute;
+    transform: scale(1.5);
+    top: 200px;
+    left: 50%;
+    margin-top: -26px;
+    margin-left: -18px;
+}
+
+.container {
+  
+  width: 100%;
+  display: -webkit-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  -webkit-box-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+          justify-content: center;
+  margin: 200px 0;
+}
+
+.header{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background-color: #f3f5f9;
+  z-index: 99;
+  box-shadow: 1px 0px 5px #f3f5f9;
+}
+.header .header-wrapper{
+  width: 400px;
+  margin: 0 auto;
+  line-height: 50px;
+  padding: 0 10px;
+}
+.header .header-wrapper .logo{
+  float:left;
+}
+.header .header-wrapper .name{
+  float:right;
+}
+
+
+/*MODAL*/
+.modal-window {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 997;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+}
+.modal-window .backside{
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.6);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width:100%;
+  height: 100%;
+  z-index: 998;
+}
+
+.modal-window:target {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-window .wrap {
+  border-radius: 6px;
+  width: 410px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 999;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  padding: 2em;
+  background: #ffffff;
+}
+.modal-window header {
+  font-weight: bold;
+}
+.modal-window .title {
+  font-weight: bold;
+    font-size: 24px;
+    margin: 0 0 15px;
+}
+
+.modal-window .sub-title{
+  font-size: 16px;
+  color:#999;
+}
+
+.modal-window .wallet-id {
+  word-break: break-all;
+  font-size: 14px;
+}
+
+.modal-window .request{
+  padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #623ce6;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 30px;
+    transition: all 200ms ease;
+}
+.modal-window .request:hover{
+    -webkit-transform: scale(1.05);
+            transform: scale(1.05);
+}
+
+.modal-close {
+  color: #aaa;
+  line-height: 50px;
+  font-size: 80%;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 0;
+  width: 70px;
+  cursor: pointer;
+}
+
+
+.modal-close:hover {
+  color: black;
+}
+
+
+/* MATCH */
+
+.no-matches {
+    padding: 50px 0;
+    text-decoration: center;
+    color:#999;
+    font-style: italic;
+}
+.match {
+  background-color: #fff;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+  min-width: 400px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+}
+
+.match-header {
+  display: -webkit-box;
+  display: flex;
+  padding: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.match-tournament {
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  font-weight: 600;
+}
+.match-tournament .game-icon{
+  width: 24px;
+  line-height: 0px;
+  margin-right: 10px;
+}
+
+.match-tournament img {
+  width: 20px;
+  margin-right: 12px;
+}
+
+.match-actions {
+  display: -webkit-box;
+  display: flex;
+  margin-left: auto;
+}
+
+
+.match-content {
+    display: -webkit-box;
+    display: flex;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.column {
+  padding: 0px 0 0px 0;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+          align-items: center;
+  width: calc(100%);
+}
+
+.match-details {
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+  -webkit-box-align: center;
+          align-items: center;
+}
+
+.match-date, .match-referee {
+  font-size: 14px;
+  color: #8A8F98;
+}
+.match-date strong, .match-referee strong {
+  color: #1c2a38;
+}
+
+.match-score {
+  margin-top: 12px;
+  text-align: center;
+  display: block;
+  
+}
+
+.match-prize{
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 15px;
+}
+.match-prize span{
+  color: #623ce6;
+}
+
+.match-place{
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: #999;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+}
+
+.match-team {
+  color: #999;
+  font-size: 14px;
+  font-weight: 400;
+  margin-top: 0px;
+}
+
+.match-platform{
+  color: #999;
+  font-size: 14px;
+  font-weight: 400;
+  margin-top: 10px;
+}
+
+.match-referee {
+  margin-top: 12px;
+}
+
+.match-bet-options {
+  display: -webkit-box;
+  display: flex;
+  margin-top: 8px;
+  padding-bottom: 12px;
+}
+
+.match-bet-option {
+  margin-left: 4px;
+  margin-right: 4px;
+  border: 1px solid #dbdade;
+  background-color: #F9f9f9;
+  border-radius: 2px;
+  color: #8A8F98;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+}
+
+.match-bet-place {
+  cursor: pointer;
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  width: 200px;
+  margin-left: -100px;
+  transition: all 200ms ease;
+  border: 0;
+  background-color: #623ce6;
+  border-radius: 6px;
+  padding: 10px 48px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  box-shadow: 0 4px 8px 0 rgba(48, 48, 48, 0.25);
+}
+.match-bet-place:hover {
+  -webkit-transform: scale(1.1);
+          transform: scale(1.1);
+}

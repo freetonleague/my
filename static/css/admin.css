@@ -1,0 +1,358 @@
+/* loader */
+.loader-global{
+  width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 99999;
+    left: 0;
+}
+
+.loader-wrap{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.loader-overlay{
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  opacity: 0.7;
+}
+
+
+
+.loader-global .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -6px;
+    margin-top: -10px;
+}
+.loader-wrap .spinner {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    margin-left: -6px;
+}
+
+.spinner, 
+.spinner:before, 
+.spinner:after {
+  width: 4px;
+  height: 20px;
+  background-color: #00B285;
+  border-radius: 2px;
+}
+
+.spinner {
+  display: inline-block;
+  position: relative;
+}
+.spinner:before, .spinner:after {
+  content: "";
+  position: absolute;
+  display: block;
+  top: 0px;
+}
+.spinner:before {
+  left: -6px;
+}
+.spinner:after {
+  left: 6px;
+}
+
+.spinner.tab-lock{
+  width: 139px;
+  height: 40px;
+}
+
+@-webkit-keyframes bounce-middle {
+  0% {
+    height: 4px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  50% {
+    height: 20px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+  100% {
+    height: 4px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+}
+@keyframes bounce-middle {
+  0% {
+    height: 4px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  50% {
+    height: 20px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+  100% {
+    height: 4px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+}
+.spinner-bounce-middle {
+  -webkit-animation: bounce-middle 0.6s ease 0.1s infinite;
+          animation: bounce-middle 0.6s ease 0.1s infinite;
+}
+.spinner-bounce-middle:before, .spinner-bounce-middle:after {
+  top: 50%;
+  -webkit-transform: translateY(-10px) translateZ(0);
+          transform: translateY(-10px) translateZ(0);
+}
+.spinner-bounce-middle:before {
+  -webkit-animation: bounce-middle 0.6s ease 0s infinite;
+          animation: bounce-middle 0.6s ease 0s infinite;
+}
+.spinner-bounce-middle:after {
+  -webkit-animation: bounce-middle 0.6s ease 0.2s infinite;
+          animation: bounce-middle 0.6s ease 0.2s infinite;
+}
+
+.blue-spinner .spinner, 
+.blue-spinner .spinner:before, 
+.blue-spinner .spinner:after {
+  width: 4px;
+  height: 20px;
+  background-color: #1998E3;
+}
+
+.green-spinner .spinner, 
+.green-spinner .spinner:before, 
+.green-spinner .spinner:after {
+  width: 4px;
+  height: 20px;
+  background-color: #2ECC71;
+}
+
+.gray-spinner .spinner, 
+.gray-spinner .spinner:before, 
+.gray-spinner .spinner:after {
+  width: 4px;
+  height: 20px;
+  background-color: #606c76;
+}
+
+.clearfix{
+  clear:both;
+}
+
+.tabs .tab.fix-size-for-6 {
+  width: 139px;
+  height: 40px;
+}
+.tabs .tab .spinner {
+  top: 5px;
+}
+
+
+/* ADD TOURNAMENT */
+.add-tournament-section {
+    height: 300px;
+}
+#add-tournament-button{}
+
+.add-tournament-container{
+    display: none;
+}
+.add-tournament-status{
+    display: none;
+    margin-top: 50px;
+}
+
+.row {
+  position: relative
+}
+.row-platform{
+  text-align: left;
+}
+
+/* CSS FIX */
+.column.overview-block .row{
+  margin-bottom: 20px;
+}
+
+table{
+  table-layout:fixed;
+}
+table td {
+    max-width: 30px;
+    min-width: 30px;
+}
+table td {
+    max-width: 12%;
+    min-width: 12%;
+}
+
+table td.payout-game_name {
+    width: 40%;
+}
+
+table td.payout-wallet{
+    text-align: center;
+}
+table td.payout-transfer{
+    text-align: center;
+}
+
+.button.small,
+.button-outline.small {
+    padding: 0 10px;
+    height: 26px;
+    line-height: 26px;
+}
+
+.button.no-mg,
+.button-outline.no-mg {
+  margin: 0;
+}
+
+.column{
+  position: relative;
+}
+
+.block-placeholdes{
+  margin-top:100px;
+  text-align: center;
+}
+
+.tournaments-list-wrapper{
+    padding-top:10px;
+    height: 600px;
+    overflow: scroll;
+}
+
+.alert.tournament{
+  display: none;
+  cursor: pointer;
+  transition: 300ms all ease;
+  border-left: 0.3rem solid #999;
+}
+.alert.tournament:hover{
+  transform: translateX(-10px);
+  box-shadow: 4px 4px 5px rgba(0,0,0,0.1);
+}
+
+.alert.selected{
+  transform: translateX(-10px);
+  box-shadow: 4px 4px 5px rgba(0,0,0,0.1);
+  border-left: 0.3rem solid #1998E3;
+}
+
+.alert .tournaments-block{}
+
+.alert .tournaments-block .block-left{
+  float: left;
+  width: 32px;
+}
+.alert .tournaments-block .block-left .icon {
+  width: 32px;
+}
+.alert .tournaments-block .block-left .icon svg{
+  width: 32px;
+}
+
+.alert .tournaments-block .block-right{
+  margin-left: 10px;
+  line-height: 24px;
+  float: left;
+  width: 270px;
+}
+.alert .tournaments-block .block-right .title {
+  font-weight: bold;
+}
+.alert .tournaments-block .block-right span {
+  float: right;
+  font-weight: bold;
+}
+
+.tournament-content-wrapper {
+  display: none;
+}
+
+.tournament-content-wrapper .tabs{
+    display: table;
+    width: 100%;
+}
+.tournament-content-wrapper .tabs .tab{
+    display: table-cell;
+    float: none;
+}
+
+.tournament-content-wrapper .tabs-content-wrapper{
+  margin-top: 30px;
+}
+.tournament-content-wrapper .tabs-content-wrapper .tab-content{
+  display: none
+}
+.tournament-content-wrapper .tabs-content-wrapper .tab-content.selected{
+  display: block
+}
+
+
+/* PRIZEPOOL */
+.place-prize{
+  font-size: 16px;
+}
+
+.prizepool-left{
+    font-weight: bold;
+}
+label small{
+  font-weight: normal
+}
+
+.column.prize-block{
+  position: relative;
+}
+.column.prize-block .helper{
+    position: absolute;
+    right: 20px;
+    bottom: 22px;
+    font-size: 14px;
+}
+
+.tournament-content-wrapper .update-status{
+    opacity: 0;
+    text-align: center;
+    font-weight: normal;
+    transition: 200ms opacity ease;
+}
+
+.tournament-content-wrapper .button.update-prize_pool{
+  width: 100%;
+}
+
+
+/* ICON GAME */
+svg.svg-loader path,
+svg.svg-loader rect{
+  fill: #2e88cc;
+}
+
+
+.icon-game--dota2{
+    fill: #A51C0F;
+}
+.icon-game__fill--FF-and-FF {
+    fill: #fff;
+}
+.icon-game__fill--E9A21A {
+    fill: #E9A21A;
+}
+.icon-game__fill--313E77 {
+    fill: #313E77;
+}
